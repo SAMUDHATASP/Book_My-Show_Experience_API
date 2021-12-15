@@ -10,7 +10,7 @@ http://www.mulesoft.org/schema/mule/book-my-show-prc-api http://www.mulesoft.org
 http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd">
 	<book-my-show-movies-sys-api:config name="BookMyShow_movies_sys_api_Config" doc:name="BookMyShow-movies-sys-api Config" doc:id="21d645fb-8ed6-47af-b193-a067897ec483" property_host="bookmyshow-movies-sys-api.us-e2.cloudhub.io" property_port="80" property_protocol="HTTP" property_basePath="/api" />
 	<book-my-show-prc-api:config name="BookMyShow_prc_api_Config" doc:name="BookMyShow-prc-api Config" doc:id="ba1ebea7-cb3c-4d60-8f8c-8c338b4e41e0" property_host="bookmyshow-process-api.us-e2.cloudhub.io" property_port="80" property_protocol="HTTP" property_basePath="/api" />
-	<api-gateway:autodiscovery apiId="17509475" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="46ed2479-b907-4927-af0b-8b81c9077341" flowRef="bookmyshow-exp-api-main" />
+	<api-gateway:autodiscovery apiId="17509475" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="48686ae9-fa41-4cd2-87f4-d45d4319a0fe" flowRef="bookmyshow-exp-api-main" />
 	<flow name="getMovies" doc:id="d62b8f13-c5b5-44fa-af9a-9c3273c41d23" >
 		<book-my-show-movies-sys-api:get-movies doc:name="Get movies" doc:id="b2c73f30-1388-42bc-9631-11fab10e60fe" config-ref="BookMyShow_movies_sys_api_Config" client-id="b35bc101ba80451f8c0436ce351fa09b" client-secret="6B0Ca4d2036B431786f9ff93e127E593"/>
 		<ee:transform doc:name="Transform Message" doc:id="a5676877-9622-4818-9108-93209107f4d9" >
