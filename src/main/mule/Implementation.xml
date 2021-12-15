@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway" xmlns:book-my-show-prc-api="http://www.mulesoft.org/schema/mule/book-my-show-prc-api"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:book-my-show-movies-sys-api="http://www.mulesoft.org/schema/mule/book-my-show-movies-sys-api" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/book-my-show-movies-sys-api http://www.mulesoft.org/schema/mule/book-my-show-movies-sys-api/current/mule-book-my-show-movies-sys-api.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/book-my-show-prc-api http://www.mulesoft.org/schema/mule/book-my-show-prc-api/current/mule-book-my-show-prc-api.xsd
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd">
+	<book-my-show-movies-sys-api:config name="BookMyShow_movies_sys_api_Config" doc:name="BookMyShow-movies-sys-api Config" doc:id="21d645fb-8ed6-47af-b193-a067897ec483" property_host="bookmyshow-movies-sys-api.us-e2.cloudhub.io" property_port="80" property_protocol="HTTP" property_basePath="/api" />
+	<book-my-show-prc-api:config name="BookMyShow_prc_api_Config" doc:name="BookMyShow-prc-api Config" doc:id="ba1ebea7-cb3c-4d60-8f8c-8c338b4e41e0" property_host="bookmyshow-process-api.us-e2.cloudhub.io" property_port="80" property_protocol="HTTP" property_basePath="/api" />
+	<api-gateway:autodiscovery apiId="17509475" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="46ed2479-b907-4927-af0b-8b81c9077341" flowRef="bookmyshow-exp-api-main" />
+	<flow name="getMovies" doc:id="d62b8f13-c5b5-44fa-af9a-9c3273c41d23" >
+		<book-my-show-movies-sys-api:get-movies doc:name="Get movies" doc:id="b2c73f30-1388-42bc-9631-11fab10e60fe" config-ref="BookMyShow_movies_sys_api_Config" client-id="b35bc101ba80451f8c0436ce351fa09b" client-secret="6B0Ca4d2036B431786f9ff93e127E593"/>
+		<ee:transform doc:name="Transform Message" doc:id="a5676877-9622-4818-9108-93209107f4d9" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="ed67f6c4-e61a-4ccf-a611-ac52cbd389fc" message="#[payload]"/>
+	</flow>
+	<flow name="bookTickets" doc:id="9d10cae6-90a8-4b61-8f58-2385a9566855" >
+		<book-my-show-prc-api:create-booking doc:name="Create booking" doc:id="fb9bd090-ff9d-4f6c-8b5f-8a34749ea5e6" config-ref="BookMyShow_prc_api_Config" client-id="e413aeb03500425983742496709f88b6" client-secret="f51A0750EbDD43D6b60D4Ec2A80593B1"/>
+		<logger level="INFO" doc:name="Logger" doc:id="09bb8e0e-2f30-4e50-a2f2-f46abb76d0c6" />
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="b2f009c5-2e0f-4fdf-b056-cf7ffd4c594a" type="BOOK-MY-SHOW-PRC-API:BAD_REQUEST">
+				<ee:transform doc:name="Transform Message" doc:id="10e95c1b-d887-4512-8fc3-fc32c083fc8b" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	error_type: "400 bad request",
+	error_description: "Unable to process further as offer code invalid"
+}]]></ee:set-payload>
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="httpStatus" ><![CDATA[%dw 2.0
+output application/json
+---
+400]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<logger level="INFO" doc:name="Logger" doc:id="189b9f28-3f33-4742-a2e3-b8a69156cdb1" message="#[payload]"/>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+</mule>
